@@ -1,11 +1,7 @@
-export const LOAD_SHIPMENTS = "LOAD_SHIPMENTS"
+export const LOAD_IMAGES = 'LOAD_IMAGES'
 
-export const SET_SHIPMENTS = "SET_SHIPMENTS"
+export const SET_IMAGE = 'SET_IMAGE'
 
-export const SET_LOADING = "SET_LOADING"
+export const loadImages = (data: []) => ({ type: LOAD_IMAGES, payload: data })
 
-export const loadShipments = () => ({type: LOAD_SHIPMENTS})
-
-export const setShipments = (data) => ({type: SET_SHIPMENTS, payload: data})
-
-export const setLoading = (data) => ({type: SET_LOADING, payload: data})
+export const setImage = (data: string) => ({ type: SET_IMAGE, payload: data })

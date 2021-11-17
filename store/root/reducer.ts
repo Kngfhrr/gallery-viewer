@@ -1,19 +1,17 @@
-import {SET_SHIPMENTS, SET_LOADING} from './actions'
+import { SET_IMAGE, LOAD_IMAGES } from './actions'
 
 const defaultState = {
-    shipments: null,
-    loading: false
+    images: null,
+    selected: null,
 }
 
-export const mainReducer = (state = defaultState, action) => {
-
+export const mainReducer = (state = defaultState, action: any) => {
     switch (action.type) {
-        case SET_LOADING:
-            
-            return {loading: action.payload}
+        case SET_IMAGE:
+            return { ...state, selected: action.payload }
 
-        case SET_SHIPMENTS:
-            return {...state, shipments: action.payload}
+        case LOAD_IMAGES:
+            return { ...state, images: action.payload }
 
         default:
             return state

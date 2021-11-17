@@ -1,165 +1,117 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, { useCallback, useEffect, useState } from 'react'
 
-import {manipulateAsync, SaveFormat} from 'expo-image-manipulator';
-
-import {FlatList, Image, StatusBar, StyleSheet, Text, View} from 'react-native';
-import * as MediaLibrary from 'expo-media-library'
+import { connect } from 'react-redux'
+import { ActivityIndicator, FlatList } from 'react-native'
+import RenderGrid from '../components/Grid'
 // @ts-ignore
-import styled from 'styled-components/native';
-import {Camera} from 'expo-camera';
+import styled from 'styled-components/native'
+import * as MediaLibrary from 'expo-media-library'
+import PermissionInfo from '../components/AboutPermissions'
+import { setImage, loadImages } from '../store/root/actions'
+import { NavigationProp, ParamListBase } from '@react-navigation/native'
+
+interface GalleryProps {
+    data: []
+    loadImages: (array: { uri: string }[]) => void
+    setImage: (e: string) => void
+    navigation: NavigationProp<ParamListBase>
+}
 
 const Container = styled.View`
-  flex: 1;
-  background-color: #2A3240;
-  justify-content: center;
-`;
-
-const ImageWrap = styled.TouchableOpacity`
-   flex: 1;
-   justify-content: center;
-   height: 100px;
-   margin: 5px;
-  
+    flex: 1;
+    background-color: #2a3240;
+    justify-content: center;
 `
 
+function Gallery(props: GalleryProps) {
+    const { data } = props
 
-export default function ImagePickerExample(props: any) {
-    const [status, requestPermission] = MediaLibrary.usePermissions();
     const [paginate, setPaginate] = useState(25)
-
-
-    const [hasPermission, setHasPermission] = useState(null);
-    // const [type, setType] = useState(Camera.Constants.Type.back);
-    const [data, setData] = useState([])
-
-    console.log('STATUS', status)
-
+    const [hasPermission, setHasPermission] = useState(null)
+    const [loading, setLoading] = useState(false)
 
     useEffect(() => {
-        getAllPhotos()
-    }, [paginate]);
-
-
-    // const compressImage = async (uri, format = SaveFormat.JPEG) => { // SaveFormat.PNG
-    //     const result = await manipulateAsync(
-    //         uri,
-    //         [{ resize: { width: 200 } }],
-    //         { compress: 0.7, format }
-    //     );
-    //
-    //     return  { name: `${Date.now()}.${format}`, type: `image/${format}`, ...result };
-    // };
-    //
-    // console.log('COMPRESS', compressImage('https://dsp-media.eskimi.com/upload/40231_3061119669_3acd1e3cb724dd3973efe627fd99fb93.jpg'))
-
+        askPermission()
+    }, [])
 
     const getAllPhotos = async () => {
-        await MediaLibrary.getAlbumsAsync({includeSmartAlbums: false})
-        const photosTemp = await MediaLibrary.getAssetsAsync({first: paginate})
-
-        // setPaginate(photosTemp.totalCount)
-
-        const array = photosTemp.assets.map(asset => ({
+        const photosTemp = await MediaLibrary.getAssetsAsync({
+            first: paginate,
+        })
+        const array = photosTemp.assets.map((asset) => ({
             ...asset,
             type: asset.mediaType,
-            // uri: asset.uri
+            uri: asset.uri,
         }))
 
-
-        setData([...array] as any)
+        props.loadImages(array)
     }
-
 
     const askPermission = async () => {
-        // const isCameraRollEnabled = await Permissions.getAsync(Permissions.CAMERA_ROLL)
-        // if(isCameraRollEnabled.granted) {
-        //     setLoaded(true)
-        //     return
-        // }
-        // const {granted} = await  Permissions.askAsync(Permissions.CAMERA_ROLL)
-        // if(granted) {
-        //     const cameraRollRes = await Permissions.getAsync(Permissions.CAMERA_ROLL);
-        //     console.log(2, cameraRollRes)
-        //     setLoaded(true)
-        // } else {
-        //     console.log('else')
-        // }
-        const {status} = await Camera.requestCameraPermissionsAsync();
-        setHasPermission(status === 'granted');
-        console.log('status', status)
+        const { status } = await MediaLibrary.requestPermissionsAsync()
+        const granted = status === 'granted'
+        // @ts-ignore
+        setHasPermission(granted)
+        granted && (await getAllPhotos())
     }
 
+    const onScrollEnd = async () => {
+        try {
+            setLoading(true)
+            setPaginate(paginate + 25)
+            await getAllPhotos()
+        } finally {
+            setLoading(false)
+        }
+    }
 
-    // const HEIGHT = 100
-    //
-    // const getItemLayout = useCallback((data, index) => ({
-    //     length: HEIGHT,
-    //     offset: HEIGHT * index,
-    //     index
-    // }), [])
+    const HEIGHT = 100
 
+    const getItemLayout = useCallback(
+        (data, index) => ({
+            length: HEIGHT,
+            offset: HEIGHT * index,
+            index,
+        }),
+        []
+    )
 
     return (
         <Container>
-
-            <FlatList
-                // decelerationRate={'fast'}
-                removeClippedSubviews={true}
-                keyExtractor={(item, index) => item.uri}
-                ListEmptyComponent={<Text style={{color: '#fff'}}>Test</Text>}
-                numColumns={3}
-                data={data}
-                onScrollEndDrag={() => setPaginate(paginate + 25)}
-                renderItem={({item, index}) => renderGrid(item)}
-                // getItemLayout={getItemLayout}
-                refreshing={true}
-                updateCellsBatchingPeriod={1}
-            />
-
+            {hasPermission ? (
+                <FlatList
+                    removeClippedSubviews={false}
+                    keyExtractor={(item, index) => `${index}`}
+                    numColumns={3}
+                    data={data}
+                    pagingEnabled={false}
+                    onEndReached={onScrollEnd}
+                    onEndReachedThreshold={0.3}
+                    ListFooterComponent={
+                        loading ? (
+                            <ActivityIndicator color={'#fff'} size={'large'} />
+                        ) : null
+                    }
+                    renderItem={({ item, index }) => (
+                        <RenderGrid
+                            onSelect={(e: string) => props.setImage(e)}
+                            item={item}
+                            index={index}
+                            {...props}
+                        />
+                    )}
+                    getItemLayout={getItemLayout}
+                />
+            ) : (
+                <PermissionInfo onPress={askPermission} />
+            )}
         </Container>
-
-    );
-
-}
-
-const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        marginTop: StatusBar.currentHeight,
-    },
-    item: {
-        backgroundColor: '#f9c2ff',
-        height: 150,
-        justifyContent: 'center',
-        marginVertical: 8,
-        marginHorizontal: 16,
-        padding: 20,
-    },
-    title: {
-        fontSize: 32,
-    },
-});
-
-
-const renderGrid = (item: object, index: number) => {
-
-    return (
-        <ImageWrap>
-            <View
-                // source={{
-                //     uri: item.uri,
-                // }}
-                style={{
-                    width: '100%',
-                    height: 100,
-                    opacity: 0.85,
-                    borderRadius: 5,
-                    margin: 5,
-                    backgroundColor: '#fff'
-                }}
-            />
-        </ImageWrap>
     )
-
-
 }
+
+export default connect(
+    (state: any) => ({
+        data: state.data.images,
+    }),
+    { setImage, loadImages } // @ts-ignore
+)(Gallery)

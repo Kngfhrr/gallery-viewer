@@ -1,34 +1,53 @@
 {
-  "expo": {
-    "name": "gallery-viewer",
-    "slug": "gallery-viewer",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
-    "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/images/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "updates": {
-      "fallbackToCacheTimeout": 0
-    },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
-    "ios": {
-      "supportsTablet": true
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
-    },
-    "web": {
-      "favicon": "./assets/images/favicon.png"
+    "expo": {
+        "plugins": [
+            [
+                "expo-media-library",
+                {
+                    "photosPermission": "Allow GalleryViewer to access your photos.",
+                    "savePhotosPermission": "Allow GalleryViewer to save photos.",
+                    "isAccessMediaLocationEnabled": false
+                }
+            ]
+        ],
+        "name": "galleryViewer",
+        "slug": "galleryViewer",
+        "version": "1.0.0",
+        "orientation": "portrait",
+        "icon": "./assets/images/icon.png",
+        "scheme": "myapp",
+        "userInterfaceStyle": "automatic",
+        "splash": {
+            "image": "./assets/images/splash.png",
+            "resizeMode": "contain",
+            "backgroundColor": "#ffffff"
+        },
+        "updates": {
+            "fallbackToCacheTimeout": 0
+        },
+        "assetBundlePatterns": ["**/*"],
+        "ios": {
+            "supportsTablet": true,
+            "infoPlist": {
+                "NSPhotoLibraryUsageDescription": "Allow GalleryViewer to access your photos.",
+                "NSPhotoLibraryAddUsageDescription": "Allow GalleryViewer to save photos."
+            }
+        },
+        "android": {
+            "adaptiveIcon": {
+                "foregroundImage": "./assets/images/adaptive-icon.png",
+                "backgroundColor": "#ffffff"
+            },
+            "permissions": [
+                "CAMERA",
+                "READ_EXTERNAL_STORAGE",
+                "android.permission.READ_EXTERNAL_STORAGE",
+                "android.permission.WRITE_EXTERNAL_STORAGE"
+            ],
+            "package": "com.kngfhrr.galleryViewer"
+        },
+        "web": {
+            "favicon": "./assets/images/favicon.png"
+        }
     }
-  }
 }

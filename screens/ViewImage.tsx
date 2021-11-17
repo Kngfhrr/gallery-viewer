@@ -1,32 +1,34 @@
-import * as React from 'react';
-import { StyleSheet } from 'react-native';
+import * as React from 'react'
 
-import EditScreenInfo from '../components/EditScreenInfo';
-import { Text, View } from '../components/Themed';
+import { Image } from 'react-native'
+import { connect } from 'react-redux'
+// @ts-ignore
+import styled from 'styled-components/native'
 
-export default function TabTwoScreen() {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Tab Two</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="/screens/TabTwoScreen.tsx" />
-    </View>
-  );
+interface ViewImageProps {
+  uri: string
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
-  },
-});
+const Container = styled.View`
+    flex: 1;
+    background-color: #2a3240;
+    justify-content: center;
+`
+
+function ViewImage(props: ViewImageProps) {
+    return (
+        <Container>
+            <Image
+                style={{ width: '100%', height: '100%', resizeMode: 'contain' }}
+                source={{ uri: props.uri }}
+            />
+        </Container>
+    )
+}
+
+export default connect(
+    (state: any) => ({
+        uri: state.data.selected,
+    }),
+    {}
+)(ViewImage)
